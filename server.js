@@ -3,6 +3,7 @@
 const express     = require('express');
 const bodyParser  = require('body-parser');
 const cors        = require('cors');
+const mongoose    = require('mongoose'); 
 require('dotenv').config();
 
 const apiRoutes         = require('./routes/api.js');
@@ -27,9 +28,22 @@ app.route('/')
 //For FCC testing purposes
 fccTestingRoutes(app);
 
-//Routing for API 
-apiRoutes(app);  
-    
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI , {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => {
+  console.log('Connected to MongoDB');
+
+   
+}).catch(err => {
+  console.error('Error connecting to MongoDB', err);
+});
+ 
+  //Routing for API 
+  apiRoutes(app);  
+  
 //404 Not Found Middleware
 app.use(function(req, res, next) {
   res.status(404)

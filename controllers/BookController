@@ -1,0 +1,98 @@
+'use strict';
+
+const Book = require('../models/Books');
+
+// Controller to create a new book
+exports.createBook = async ({title}) => {
+  console.log("create Book:" + title)
+  try {
+    const newBook = new Book({ title });
+    return await newBook.save();
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Controller to get all books or filter books by title
+exports.getAllBooks = async () => {
+  try {
+    const books = await Book.find();
+    const booksWithCommentCount = books.map(book => ({
+      _id: book._id,
+      title: book.title,
+      comments: book.comments,
+      commentcount: book.comments.length,
+    }));
+    console.log("get book:" + JSON.stringify(booksWithCommentCount));
+    return booksWithCommentCount;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Controller to get a single book by ID
+exports.getBookById = async (id) => {
+
+  try {
+    const book = await Book.findById(id);
+    if (!book) return undefined;
+
+    const bookWithCommentCount = {
+      _id: book._id,
+      title: book.title,
+      comments: book.comments,
+    };
+    return bookWithCommentCount;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Controller to add a comment to a book
+exports.addComment = async (id,comment) => {
+
+  try {
+    const updatedBook = await Book.findByIdAndUpdate(
+      id,
+      { $push: { comments: comment } },
+      { new: true }
+    );
+      if (!updatedBook) return undefined;
+
+    const bookWithCommentCount = {
+      _id: updatedBook._id,
+      title: updatedBook.title,
+      comments: updatedBook.comments,
+      commentCount: updatedBook.comments.length,
+    };
+
+    return bookWithCommentCount;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Controller to delete a book by ID
+exports.deleteBookById = async (id) => {
+  try {
+
+    let deletedBook;
+    deletedBook = await this.getBookById(id);
+    if (deletedBook){
+      return await Book.findByIdAndDelete(id);
+    }else{
+      return undefined;
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Controller to delete all books
+exports.deleteAllBooks = async () => {
+  try {
+    return await Book.deleteMany();
+  } catch (err) {
+    throw err;
+  }
+};
